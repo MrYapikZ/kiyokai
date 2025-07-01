@@ -43,3 +43,20 @@ def login(payload: LoginRequest):
     )
 
     return res
+
+@router.post("/logout")
+def logout():
+    """
+    Logout endpoint to clear refresh_token cookie.
+    """
+    response = JSONResponse(content={"message": "Logged out successfully"})
+
+    # Clear the refresh token cookie
+    response.delete_cookie(
+        key=settings.COOKIE_REFRESH_TOKEN_NAME,
+        httponly=settings.COOKIE_HTTPONLY,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE
+    )
+
+    return response
