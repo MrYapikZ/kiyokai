@@ -1,12 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Request
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from app.config import settings
 from app.schemas.auth import LoginRequest, Token
 from app.services.auth import verify_login_kitsu
-from app.core.dependencies import oauth2_scheme
-from typing import Dict
+from app.core.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -49,14 +47,17 @@ def logout():
     """
     Logout endpoint to clear refresh_token cookie.
     """
-    response = JSONResponse(content={"message": "Logged out successfully"})
+    res = JSONResponse(content={"message": "Logged out successfully"})
+    res.delete_cookie(key=settings.COOKIE_REFRESH_TOKEN_NAME)
+    return res
 
-    # Clear the refresh token cookie
-    response.delete_cookie(
-        key=settings.COOKIE_REFRESH_TOKEN_NAME,
-        httponly=settings.COOKIE_HTTPONLY,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE
-    )
-
-    return response
+@router.get("/validate")
+def get_current_user_info(
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get current authenticated user information.
+    Requires valid token and zou_url header.
+    """
+    return current_user
