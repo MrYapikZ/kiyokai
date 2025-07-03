@@ -4,6 +4,7 @@ import os
 class Settings(BaseSettings):
     APP_PORT: int = 8741
 
+    ZOU_API_URL: str = os.environ.get("ZOU_API_URL", "http://localhost:5001")
     DATABASE_URL: str = os.environ.get("DATABASE_URL")
 
     # Add cookie config
