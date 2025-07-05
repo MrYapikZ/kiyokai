@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app.config import settings
-from app.core import prisma
+from app.core.prisma import db
 
 router = APIRouter()
 
@@ -15,8 +15,7 @@ async def create_mastershot(request: Request):
     try:
         data = await request.json()
 
-        await prisma.connect_db()
-        mastershot = await prisma.db.mastershot.create(data)
+        mastershot = await db.mastershot.create(data)
         print(mastershot)
 
         # Here you would typically process the data and save it to a database
