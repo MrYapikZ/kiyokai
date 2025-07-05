@@ -14,8 +14,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+model MasterShot {
+  id                String   @id @default(uuid())
+  file_name         String   @unique
+  file_path         String
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  edit_user_id      String
+  edit_user_name    String
+  project_id        String
+  project_name      String
+  episode_id        String
+  episode_name      String
+  sequence_id       String
+  sequence_name     String
+  shot_id           String @unique
+  shot_name         String
+  nas_server_id     String?
+
+  nas_server NasServer? @relation(fields: [nas_server_id], references: [id])
+}
+
+model VersionShot {
+  id                String   @id @default(uuid())
+  file_name         String   @unique
+  file_path         String
+  version_number    Int
+  locked            Boolean @default(false)
+  locked_by_user_id String?
+  locked_by_user_name String?
+  label             String?
+  notes             String?
+  program           String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  edit_user_id      String
+  edit_user_name    String
+  project_id        String
+  project_name      String
+  episode_id        String
+  episode_name      String
+  sequence_id       String
+  sequence_name     String
+  shot_id           String @unique
+  shot_name         String
+  master_shot_id    String?
+}
+
+model NasServer {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  host        String
+  port        Int
+  username    String?
+  password    String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  master_shots MasterShot[]
 }
