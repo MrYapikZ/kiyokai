@@ -3,10 +3,11 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app.config import settings
 from app.core.prisma import db
+from app.services.auth import verify_user_token
 
 router = APIRouter()
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create", status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_user_token)])
 async def create_mastershot(request: Request):
     """
     Endpoint to create a master shot.
@@ -28,7 +29,7 @@ async def create_mastershot(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/list", status_code=status.HTTP_200_OK)
+@router.get("/list", status_code=status.HTTP_200_OK, dependencies=[Depends(verify_user_token)])
 async def list_mastershots():
     """
     Endpoint to list all master shots.

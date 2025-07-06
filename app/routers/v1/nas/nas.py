@@ -3,10 +3,11 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app.config import settings
 from app.core.prisma import db
+from app.services.auth import verify_user_token
 
 router = APIRouter()
 
-@router.get("/list", status_code=status.HTTP_200_OK)
+@router.get("/list", status_code=status.HTTP_200_OK, dependencies=[Depends(verify_user_token)])
 async def list_nas():
     """
     Endpoint to list all NAS entries.
@@ -22,7 +23,7 @@ async def list_nas():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create", status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_user_token)])
 async def create_nas(request: Request):
     """
     Endpoint to create a NAS entry.
