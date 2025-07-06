@@ -68,6 +68,10 @@ model NasServer {
   port        Int
   username    String?
   password    String?
+  project_path String?
+  windows_path String?
+  mac_path    String?
+  linux_path  String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 

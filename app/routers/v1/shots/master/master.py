@@ -27,3 +27,19 @@ async def create_mastershot(request: Request):
         }, status_code=201)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/list", status_code=status.HTTP_200_OK)
+async def list_mastershots():
+    """
+    Endpoint to list all master shots.
+    This endpoint can be used to retrieve all master shots from the system.
+    """
+    try:
+        mastershots = await db.mastershot.find_many()
+        return JSONResponse(content={
+            "success": True,
+            "message": "Master shots retrieved successfully!",
+            "data": jsonable_encoder(mastershots)
+        }, status_code=200)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
