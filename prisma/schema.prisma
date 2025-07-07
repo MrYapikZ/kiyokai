@@ -28,11 +28,14 @@ model MasterShot {
   episode_name      String
   sequence_id       String
   sequence_name     String
-  shot_id           String @unique
+  shot_id           String
   shot_name         String
+  task_id           String
+  task_name         String
   nas_server_id     String?
 
   nas_server NasServer? @relation(fields: [nas_server_id], references: [id])
+  version_shots     VersionShot[]  @relation("MasterToVersions")
 }
 
 model VersionShot {
@@ -56,22 +59,25 @@ model VersionShot {
   episode_name      String
   sequence_id       String
   sequence_name     String
-  shot_id           String @unique
+  shot_id           String
   shot_name         String
-  master_shot_id    String?
+  task_id           String
+  task_name         String
+  master_shot_id    String
+
+  master_shot       MasterShot  @relation("MasterToVersions", fields: [master_shot_id], references: [id], onDelete: Cascade)
 }
 
 model NasServer {
   id          String   @id @default(uuid())
   name        String   @unique
   host        String
-  port        Int
+  protocol    String   @default("smb")
+  port        Int?
   username    String?
   password    String?
   project_path String?
-  windows_path String?
-  mac_path    String?
-  linux_path  String?
+  drive_letter String? @db.Char(1)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 

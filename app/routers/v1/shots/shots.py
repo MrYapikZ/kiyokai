@@ -5,4 +5,4 @@ from app.routers.v1.shots.master import master
 
 router = APIRouter()
 
-router.include_router(master.router, prefix="/mastershot", tags=["mastershot"])
+router.include_router(master.router, prefix="/mastershots", tags=["mastershots"])

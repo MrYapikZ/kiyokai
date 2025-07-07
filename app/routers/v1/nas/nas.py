@@ -3,18 +3,18 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app.config import settings
 from app.core.prisma import db
-from app.services.auth import verify_user_token
+from app.services.auth import AuthService
 
 router = APIRouter()
 
-@router.get("/list", status_code=status.HTTP_200_OK, dependencies=[Depends(verify_user_token)])
+@router.get("/list", status_code=status.HTTP_200_OK, dependencies=[Depends(AuthService.verify_user_token)])
 async def list_nas():
     """
     Endpoint to list all NAS entries.
     This endpoint can be used to retrieve all NAS entries from the system.
     """
     try:
-        nas_entries = await db.nasserver.find_many()
+        nas_entries = await db.nasserver.find_many(include={"master_shots": True})
         return JSONResponse(content={
             "success": True,
             "message": "NAS entries retrieved successfully!",
@@ -23,7 +23,7 @@ async def list_nas():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/create", status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_user_token)])
+@router.post("/create", status_code=status.HTTP_201_CREATED, dependencies=[Depends(AuthService.verify_user_token)])
 async def create_nas(request: Request):
     """
     Endpoint to create a NAS entry.
