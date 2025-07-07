@@ -36,6 +36,8 @@ model MasterShot {
 
   nas_server NasServer? @relation(fields: [nas_server_id], references: [id])
   version_shots     VersionShot[]  @relation("MasterToVersions")
+
+  @@unique([shot_id, task_id])
 }
 
 model VersionShot {

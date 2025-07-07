@@ -15,6 +15,26 @@ async def create_mastershot(request: Request):
     """
     try:
         data = await request.json()
+        file_name = data.get("file_name")
+        file_path = data.get("file_path")
+
+        existing = await db.mastershot.find_first(
+            where={
+                "file_name": file_name,
+                "file_path": file_path
+            }
+        )
+
+        if existing:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "success": False,
+                    "exist": True,
+                    "message": "Master shot with this file name and path already exists.",
+                    "data": jsonable_encoder(existing)
+                }
+            )
 
         mastershot = await db.mastershot.create(data, include={"nas_server": True})
         print(mastershot)
@@ -95,7 +115,7 @@ async def update_mastershot(shot_id: str, task_id: str, request: Request):
         data = await request.json()
 
         updated_mastershot = await db.mastershot.update(
-            where={"shot_id": shot_id, "task_id": task_id},
+            where={"shot_id_task_id": {"shot_id": shot_id, "task_id": task_id}},
             data=data
         )
         if not updated_mastershot:
