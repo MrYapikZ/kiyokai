@@ -105,13 +105,14 @@ async def get_versionshots_by_shot_id_and_task_id(
     task_id: str = Path(..., description="ID of the task")
 ):
     """
-    Endpoint to retrieve all version shots by shot_id and task_id.
+    Endpoint to retrieve all version shots by shot_id and task_id,
+    ordered with the latest version on top.
     """
     try:
         versionshots = await db.versionshot.find_many(where={
             "shot_id": shot_id,
             "task_id": task_id
-        })
+        }, order={"version_number": "desc"})
         return JSONResponse(content={
             "success": True,
             "message": "Version shots retrieved successfully!",
