@@ -126,11 +126,10 @@ async def get_versionshots_by_shot_id_and_task_id_versions(
     task_id: str = Path(..., description="ID of the task")
 ):
     """
-    Endpoint to retrieve all version shots by shot_id and task_id.
-    Assumes highest version_number is the latest.
+    Endpoint to retrieve the latest version shot by shot_id and task_id.
     """
     try:
-        versionshots = await db.versionshot.find_many(
+        versionshots = await db.versionshot.find_first(
             where={
                 "shot_id": shot_id,
                 "task_id": task_id
@@ -142,7 +141,7 @@ async def get_versionshots_by_shot_id_and_task_id_versions(
 
         return JSONResponse(content={
             "success": True,
-            "message": "Version shots retrieved successfully!",
+            "message": "Latest version shot retrieved successfully!",
             "data": jsonable_encoder(versionshots)
         }, status_code=200)
     except Exception as e:
