@@ -68,6 +68,8 @@ model VersionShot {
   master_shot_id    String
 
   master_shot       MasterShot  @relation("MasterToVersions", fields: [master_shot_id], references: [id], onDelete: Cascade)
+  @@unique([file_name, file_path])
+  @@unique([shot_id, task_id, version_number])
 }
 
 model NasServer {
