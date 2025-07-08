@@ -71,6 +71,74 @@ async def create_versionshot(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/{versionshot_id}", status_code=status.HTTP_200_OK, dependencies=[Depends(AuthService.verify_user_token)])
+async def get_versionshot(versionshot_id: str = Path(..., description="ID of the version shot")):
+    """
+    Endpoint to retrieve a specific version shot by its ID.
+    """
+    try:
+        versionshot = await db.versionshot.find_first(where={"id": versionshot_id})
+        if not versionshot:
+            raise HTTPException(status_code=404, detail=f"Version shot with ID '{versionshot_id}' not found.")
+
+        return JSONResponse(content={
+            "success": True,
+            "message": "Version shot retrieved successfully!",
+            "data": jsonable_encoder(versionshot)
+        }, status_code=200)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.patch("/{versionshot_id}", status_code=status.HTTP_202_ACCEPTED, dependencies=[Depends(AuthService.verify_user_token)])
+async def update_versionshot(
+    request: Request,
+    versionshot_id: str = Path(..., description="ID of the version shot")
+):
+    """
+    Endpoint to update a specific version shot by its ID.
+    If the version is locked, only the user who locked it can update.
+    """
+    try:
+        data = await request.json()
+        edit_user_id = data.get("edit_user_id")
+
+        if not edit_user_id:
+            raise HTTPException(status_code=400, detail="edit_user_id is required")
+
+        # Get current version shot from DB
+        current = await db.versionshot.find_unique(where={"id": versionshot_id})
+        if not current:
+            raise HTTPException(status_code=404, detail=f"Version shot with ID '{versionshot_id}' not found.")
+
+        if current.commited:
+            raise HTTPException(status_code=400, detail="Cannot update a committed version shot.")
+
+        # If locked, only the locker can update
+        if current.locked:
+            if current.locked_by_user_id != edit_user_id:
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"This version shot is locked by another user: {current.locked_by_user_name}"
+                )
+
+        # Perform the update
+        updated = await db.versionshot.update(
+            where={"id": versionshot_id},
+            data=data,
+            include={"master_shot": True}
+        )
+
+        return JSONResponse(content={
+            "success": True,
+            "message": "Version shot updated successfully!",
+            "data": jsonable_encoder(updated)
+        }, status_code=202)
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/list", status_code=status.HTTP_200_OK, dependencies=[Depends(AuthService.verify_user_token)])
 async def list_versionshots():
     """
