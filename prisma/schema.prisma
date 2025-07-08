@@ -18,6 +18,7 @@ model MasterShot {
   id                String   @id @default(uuid())
   file_name         String   @unique
   file_path         String
+  version_folder    String?
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
   edit_user_id      String
@@ -45,6 +46,7 @@ model VersionShot {
   file_name         String   @unique
   file_path         String
   version_number    Int
+  commited          Boolean @default(false)
   locked            Boolean @default(false)
   locked_by_user_id String?
   locked_by_user_name String?

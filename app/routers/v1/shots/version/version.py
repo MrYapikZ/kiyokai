@@ -44,16 +44,18 @@ async def create_versionshot(request: Request):
             )
 
         # Find latest version
-        latest_version = await db.versionshot.find_first(
-            where={
-                "shot_id": shot_id,
-                "task_id": task_id
-            },
-            order={"version_number": "desc"}
-        )
-
-        next_version_number = 0 if latest_version is None else latest_version.version_number + 1
-        data["version_number"] = next_version_number
+        if "version_number" not in data:
+            latest_version = await db.versionshot.find_first(
+                where={
+                    "shot_id": shot_id,
+                    "task_id": task_id
+                },
+                order={"version_number": "desc"}
+            )
+            next_version_number = 0 if latest_version is None else latest_version.version_number + 1
+            data["version_number"] = next_version_number
+        else:
+            next_version_number = data["version_number"]
 
         # Create version shot
         versionshot = await db.versionshot.create(data, include={"master_shot": True})
