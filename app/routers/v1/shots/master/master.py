@@ -49,6 +49,40 @@ async def create_mastershot(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/{mastershot_id}", status_code=status.HTTP_200_OK, dependencies=[Depends(AuthService.verify_user_token)])
+async def get_mastershot(mastershot_id: str = Path(..., description="ID of the master shot to retrieve")):
+    """
+    Endpoint to retrieve a single master shot by ID with its NAS info and latest version shot.
+    """
+    try:
+        # Get mastershot with NAS info
+        mastershot = await db.mastershot.find_first(
+            where={"id": mastershot_id},
+            include={"nas_server": True}
+        )
+
+        if not mastershot:
+            raise HTTPException(status_code=404, detail=f"MasterShot with ID '{mastershot_id}' not found.")
+
+        # Get latest version shot linked to this mastershot
+        latest_versionshot = await db.versionshot.find_first(
+            where={"master_shot_id": mastershot_id},
+            order={"version_number": "desc"}
+        )
+
+        # Attach latest version to mastershot under a new key
+        mastershot_dict = jsonable_encoder(mastershot)
+        mastershot_dict["latest_version_shot"] = jsonable_encoder(latest_versionshot) if latest_versionshot else None
+
+        return JSONResponse(content={
+            "success": True,
+            "message": "Master shot retrieved successfully!",
+            "data": mastershot_dict
+        }, status_code=200)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/list", status_code =status.HTTP_200_OK, dependencies=[Depends(AuthService.verify_user_token)])
 async def list_mastershots():
     """
